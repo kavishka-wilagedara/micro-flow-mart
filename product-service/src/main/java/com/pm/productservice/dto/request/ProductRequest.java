@@ -2,6 +2,7 @@ package com.pm.productservice.dto.request;
 
 import com.pm.productservice.model.ProductStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -17,18 +18,18 @@ public class ProductRequest {
 
     private String description;
 
-    @NotBlank(message = "Status is required")
+    @NotNull(message = "Status is required")
     private ProductStatus status;
 
     @NotBlank(message = "Quantity is required")
     private String quantity;
 
-    @NotBlank(message = "Price is required")
+    @NotNull(message = "Price is required")
     private Double price;
 
-    @NotBlank(message = "Product sale status is required")
+    @NotNull(message = "Product sale status is required")
     private Boolean isForSale;
 
-    @NotBlank(message = "Expiry date is required")
+    @NotNull(message = "Expiry date is required")
     private LocalDate expiryDate;
 }
