@@ -9,6 +9,7 @@ import com.pm.productservice.model.Product;
 import com.pm.productservice.model.ProductStatus;
 import com.pm.productservice.repo.ProductRepository;
 import com.pm.productservice.service.ProductService;
+import com.pm.productservice.util.ApplicationConstants;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,7 +45,8 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long productId, ProductRequest productRequest) {
 
         Product existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Product not found with id:" + productId));
+                .orElseThrow(() -> new NotFoundException(
+                        ApplicationConstants.PRODUCT_NOT_FOUND_MESSAGE + productId));
 
         // Validate date
         validateProductRequest(productRequest);
@@ -62,14 +64,20 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(long productId) {
 
         Product existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Product not found with id:" + productId));
+                .orElseThrow(() -> new NotFoundException(
+                        ApplicationConstants.PRODUCT_NOT_FOUND_MESSAGE + productId));
 
         productRepository.delete(existingProduct);
     }
 
     @Override
     public ProductResponse getProduct(long productId) {
-        return null;
+
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(()-> new NotFoundException(
+                        ApplicationConstants.PRODUCT_NOT_FOUND_MESSAGE + productId));
+
+        return productMapper.toProductResponse(existingProduct);
     }
 
     @Override
