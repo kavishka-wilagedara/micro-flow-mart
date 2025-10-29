@@ -21,7 +21,9 @@ public class ProductController {
     public ResponseEntity<ProductResponse> create(
             @Valid @RequestBody ProductRequest productRequest){
 
-        return ResponseEntity.ok(productService.createProduct(productRequest));
+        ProductResponse productResponse = productService.createProduct(productRequest);
+
+        return ResponseEntity.ok().body(productResponse);
     }
 
     @PutMapping("/update/{productId}")
@@ -29,6 +31,17 @@ public class ProductController {
             @Valid @PathVariable Long productId,
             @RequestBody ProductRequest productRequest){
 
-        return ResponseEntity.ok(productService.updateProduct(productId, productRequest));
+        ProductResponse productResponse = productService.updateProduct(productId, productRequest);
+
+        return ResponseEntity.ok().body(productResponse);
     }
+
+    @DeleteMapping("/delete/{productId}")
+    public ResponseEntity<Void> delete(@PathVariable Long productId){
+
+        productService.deleteProduct(productId);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
