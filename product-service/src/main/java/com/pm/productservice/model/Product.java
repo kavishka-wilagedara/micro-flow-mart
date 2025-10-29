@@ -32,7 +32,7 @@ public class Product {
     private ProductStatus status;
 
     @NotNull
-    private String quantity;
+    private int quantity;
     @NotNull
     private Double price;
     @NotNull

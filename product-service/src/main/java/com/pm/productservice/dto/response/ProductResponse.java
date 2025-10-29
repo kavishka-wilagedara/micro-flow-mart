@@ -14,7 +14,7 @@ public class ProductResponse {
     private String name;
     private String description;
     private ProductStatus status;
-    private String quantity;
+    private int quantity;
     private Double price;
     private boolean isForSale;
     private LocalDate expiryDate;
