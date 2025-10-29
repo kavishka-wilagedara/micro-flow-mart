@@ -3,6 +3,7 @@ package com.pm.productservice.service.impl;
 import com.pm.productservice.dto.request.ProductRequest;
 import com.pm.productservice.dto.response.ProductResponse;
 import com.pm.productservice.exception.InvalidDateException;
+import com.pm.productservice.exception.NotFoundException;
 import com.pm.productservice.mapper.ProductMapper;
 import com.pm.productservice.model.Product;
 import com.pm.productservice.repo.ProductRepository;
@@ -37,17 +38,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse updateProduct(ProductRequest productRequest) {
-        return null;
+    public ProductResponse updateProduct(Long productId, ProductRequest productRequest) {
+
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found with id:" + productId));
+
+        // Validate date
+        validateProductRequest(productRequest);
+        // Set product details
+        productMapper.updateProductFromRequest(productRequest, existingProduct);
+
+        productRepository.save(existingProduct);
+
+        return productMapper.toProductResponse(existingProduct);
     }
 
     @Override
-    public void deleteProduct(String productId) {
+    public void deleteProduct(long productId) {
 
     }
 
     @Override
-    public ProductResponse getProduct(String productId) {
+    public ProductResponse getProduct(long productId) {
         return null;
     }
 
