@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
@@ -50,6 +52,14 @@ public class ProductController {
         ProductResponse productResponse = productService.getProduct(productId);
 
         return ResponseEntity.ok().body(productResponse);
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductResponse>> getAllProduct(){
+
+        List<ProductResponse> allProducts = productService.getAllProducts();
+
+        return ResponseEntity.ok().body(allProducts);
     }
 
 }

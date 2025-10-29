@@ -82,7 +82,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return List.of();
+        List<Product> products = productRepository.findAll();
+
+        return products.stream().map(productMapper::toProductResponse).toList();
     }
 
     private void validateProductRequest(ProductRequest productRequest) {
