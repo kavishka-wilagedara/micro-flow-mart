@@ -6,6 +6,7 @@ import com.pm.productservice.exception.InvalidDateException;
 import com.pm.productservice.exception.NotFoundException;
 import com.pm.productservice.mapper.ProductMapper;
 import com.pm.productservice.model.Product;
+import com.pm.productservice.model.ProductStatus;
 import com.pm.productservice.repo.ProductRepository;
 import com.pm.productservice.service.ProductService;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class ProductServiceImpl implements ProductService {
         validateProductRequest(productRequest);
         // Set product details
         Product newProduct = productMapper.toProduct(productRequest);
+        // Set product status
+        setProductStatus(newProduct);
 
         productRepository.save(newProduct);
 
@@ -47,6 +50,8 @@ public class ProductServiceImpl implements ProductService {
         validateProductRequest(productRequest);
         // Set product details
         productMapper.updateProductFromRequest(productRequest, existingProduct);
+        // Set product status
+        setProductStatus(existingProduct);
 
         productRepository.save(existingProduct);
 
@@ -75,6 +80,21 @@ public class ProductServiceImpl implements ProductService {
         // Check the expiry date is valid
         if (productRequest.getExpiryDate().isBefore(today)) {
             throw new InvalidDateException("Expiry date cannot be before current date");
+        }
+    }
+
+    private void setProductStatus(Product product){
+
+        int productQuantity = product.getQuantity();
+
+        if(productQuantity == 0){
+            product.setStatus(ProductStatus.OUT_OF_STOCK);
+        }
+        else if(productQuantity < 10){
+            product.setStatus(ProductStatus.LOW_STOCK);
+        }
+        else{
+            product.setStatus(ProductStatus.IN_STOCK);
         }
     }
 }
