@@ -1,13 +1,11 @@
 package com.pm.orderservice.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class OrderRequest {
 
-    @NotBlank(message = "Product ID required")
-    private long productId;
-    @NotBlank(message = "Quantity required")
-    private int quantity;
+    private RecieverDetailsRequest recieverDetailsRequest;
+    private RecieverAddressRequest recieverAddressRequest;
+    private ProductDetailsRequest productDetailsRequest;
 }
