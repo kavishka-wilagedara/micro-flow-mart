@@ -2,9 +2,12 @@ package com.pm.orderservice.service.impl;
 
 import com.pm.orderservice.dto.request.OrderRequest;
 import com.pm.orderservice.dto.response.OrderResponse;
+import com.pm.orderservice.dto.response.ProductOrderResponse;
+import com.pm.orderservice.dto.response.ProductResponse;
 import com.pm.orderservice.repo.OrderRepository;
 import com.pm.orderservice.service.OrderService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -12,13 +15,28 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final WebClient webClient;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, WebClient webClient) {
         this.orderRepository = orderRepository;
+        this.webClient = webClient;
     }
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest) {
+
+        long productId = orderRequest.getProductId();
+
+        try{
+            ProductResponse productResponseFromService = webClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("http://localhost:8081/api/v1/products/get/{productId}").build(productId))
+                    .retrieve()
+                    .bodyToMono(ProductResponse.class)
+                    .block();
+
+        }
+        catch (){}
+
         return null;
     }
 
