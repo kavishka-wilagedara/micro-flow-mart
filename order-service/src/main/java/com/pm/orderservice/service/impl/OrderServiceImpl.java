@@ -30,11 +30,11 @@ public class OrderServiceImpl implements OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
+    private final WebClient productWebClient;
 
-    public OrderServiceImpl(OrderRepository orderRepository, WebClient webClient) {
+    public OrderServiceImpl(OrderRepository orderRepository, WebClient productWebClient) {
         this.orderRepository = orderRepository;
-        this.webClient = webClient;
+        this.productWebClient = productWebClient;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         long productId = orderRequest.getProductDetailsRequest().getProductId();
 
         try{
-            ProductOrderResponse productResponseFromService = webClient.get()
+            ProductOrderResponse productResponseFromService = productWebClient.get()
                     .uri("/api/v1/products/get/{productId}", productId)
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
@@ -54,7 +54,6 @@ public class OrderServiceImpl implements OrderService {
                     .bodyToMono(ProductOrderResponse.class)
                     .blockOptional()
                             .orElseThrow(() -> new CustomBusinessException("Empty product order response"));
-
 
             // Validate product availability
             checkProductAvailability(productResponseFromService);
