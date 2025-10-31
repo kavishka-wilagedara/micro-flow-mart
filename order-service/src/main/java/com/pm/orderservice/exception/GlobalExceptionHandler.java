@@ -37,20 +37,20 @@ public class GlobalExceptionHandler {
 
         Map<String, String> errors = new HashMap<>();
 
-        errors.put("message", "Product not found");
+        errors.put("message", ex.getMessage());
 
         return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(CustomBusinessException.class)
     public ResponseEntity<Map<String, String>> handleCustomBusinessException(
-            NotFoundException ex){
+            CustomBusinessException ex){
 
         log.error("Handling custom business exception", ex);
 
         Map<String, String> errors = new HashMap<>();
 
-        errors.put("message", "Order creation failed");
+        errors.put("message", ex.getMessage());
 
         return ResponseEntity.badRequest().body(errors);
     }
