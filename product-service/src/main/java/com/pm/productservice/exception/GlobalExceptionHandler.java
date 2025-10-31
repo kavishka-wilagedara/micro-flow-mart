@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         log.warn("Expiry date cannot be before current date {}", ex.getMessage());
 
         Map<String, String> errors = new HashMap<>();
-        errors.put("message", "Expiry date cannot be before current date");
+        errors.put("message", ex.getMessage());
 
         return ResponseEntity.badRequest().body(errors);
     }
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
         log.error("Handle not found exception", ex);
 
         Map<String, String> errors = new HashMap<>();
-        errors.put("message", "Product not found");
+        errors.put("message", ex.getMessage());
 
         return ResponseEntity.badRequest().body(errors);
     }
