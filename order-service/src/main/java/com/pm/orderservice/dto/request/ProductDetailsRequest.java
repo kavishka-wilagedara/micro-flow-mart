@@ -1,14 +1,15 @@
 package com.pm.orderservice.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class ProductDetailsRequest {
 
-    @NotBlank(message = "Product ID required")
-    private long productId;
-    @NotBlank(message = "Quantity required")
-    private int quantity;
-
+    @NotNull(message = "Product ID required")
+    private Long productId;
+    @NotNull(message = "Quantity required")
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private Integer quantity;
 }
