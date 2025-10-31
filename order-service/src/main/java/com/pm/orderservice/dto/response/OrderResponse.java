@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class OrderResponse {
 
-    private ProductResponse productResponse;
+    private ProductOrderResponse productOrderResponse;
     private int quantity;
     private double totalPrice;
     private LocalDateTime orderDate;
