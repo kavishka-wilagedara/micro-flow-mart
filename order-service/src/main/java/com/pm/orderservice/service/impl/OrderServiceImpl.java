@@ -6,7 +6,6 @@ import com.pm.orderservice.dto.request.RecieverDetailsRequest;
 import com.pm.orderservice.dto.response.OrderResponse;
 import com.pm.orderservice.dto.response.ProductOrderResponse;
 import com.pm.orderservice.exception.CustomBusinessException;
-import com.pm.orderservice.exception.NotFoundException;
 import com.pm.orderservice.model.Order;
 import com.pm.orderservice.model.RecieverAddress;
 import com.pm.orderservice.model.RecieverDetails;
@@ -14,11 +13,9 @@ import com.pm.orderservice.repo.OrderRepository;
 import com.pm.orderservice.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,53 +39,16 @@ public class OrderServiceImpl implements OrderService {
 
         long productId = orderRequest.getProductDetailsRequest().getProductId();
 
-        try{
-            ProductOrderResponse productResponseFromService = productWebClient.get()
-                    .uri("/api/v1/products/get/{productId}", productId)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
-                            clientResponse.bodyToMono(String.class)
-                                    .flatMap(errorBody -> Mono.error(new NotFoundException("Product not found with ID: " + productId))))
-                    .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-                            Mono.error(new CustomBusinessException("Product service is currently unavailable")))
-                    .bodyToMono(ProductOrderResponse.class)
-                    .blockOptional()
-                            .orElseThrow(() -> new CustomBusinessException("Empty product order response"));
+        ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
+        // Validate product availability
+        checkProductAvailability(productOrderResponse);
 
-            // Validate product availability
-            checkProductAvailability(productResponseFromService);
+        OrderResponse orderResponse = buildOrderResponse(orderRequest, productOrderResponse);
+        Order orderEntity = buildOrderEntity(orderRequest, orderResponse, productId);
 
-            // For return orderResponse
-            OrderResponse orderResponse = new OrderResponse();
-            calculateTotalAmountOfOrder(orderRequest, productResponseFromService, orderResponse);
-            setOrderDetails(orderRequest, productResponseFromService, orderResponse);
+        orderRepository.save(orderEntity);
 
-            // Convert OrderResponse DTO into Order
-            Order orderEntity = new Order();
-            orderEntity.setProductId(productId);
-            orderEntity.setQuantity(orderResponse.getQuantity());
-            orderEntity.setTotalPrice(orderResponse.getTotalPrice());
-            orderEntity.setOrderDate(orderResponse.getOrderDate());
-
-            orderEntity.setRecieverDetails(mapRecieverDetailsAndAddress(orderRequest));
-
-            orderRepository.save(orderEntity);
-
-            return orderResponse;
-
-        }
-        catch (NotFoundException ex){
-            log.error("Error: {}", ex.getMessage());
-            throw new CustomBusinessException("Can't create order: Product not found");
-        }
-        catch (WebClientResponseException ex){
-            log.error("Error: {}", ex.getMessage());
-            throw new CustomBusinessException("Product service is currently unavailable");
-        }
-        catch (Exception ex){
-            log.error("Error: {}", ex.getMessage());
-            throw new CustomBusinessException("Unexpected error");
-        }
+        return orderResponse;
     }
 
     @Override
@@ -179,5 +139,44 @@ public class OrderServiceImpl implements OrderService {
 
         return recieverDetails;
 
+    }
+
+    private ProductOrderResponse fetchProductOrderDetails(long productId) {
+
+        try{
+            return productWebClient.get()
+                    .uri("/api/v1/products/{productId}", productId)
+                    .retrieve()
+                    .bodyToMono(ProductOrderResponse.class)
+                    .blockOptional()
+                    .orElseThrow(() -> new CustomBusinessException("Empty product order response"));
+        }
+        catch (WebClientRequestException ex){
+            log.error("Error fetch product details: {}", ex.getMessage());
+            throw new CustomBusinessException("Product service is unreachable or down");
+        }
+        catch (Exception ex) {
+            log.error("Unexpected error fetching product: {}", ex.getMessage());
+            throw new CustomBusinessException("Unexpected error while communicating with Product Service");
+        }
+    }
+
+    private OrderResponse buildOrderResponse(OrderRequest orderRequest, ProductOrderResponse productOrderResponse){
+
+        OrderResponse response = new OrderResponse();
+        calculateTotalAmountOfOrder(orderRequest, productOrderResponse, response);
+        setOrderDetails(orderRequest, productOrderResponse, response);
+        return response;
+
+    }
+
+    private Order buildOrderEntity(OrderRequest orderRequest, OrderResponse orderResponse, long productId){
+        return Order.builder()
+                .productId(productId)
+                .quantity(orderResponse.getQuantity())
+                .totalPrice(orderResponse.getTotalPrice())
+                .orderDate(orderResponse.getOrderDate())
+                .recieverDetails(mapRecieverDetailsAndAddress(orderRequest))
+                .build();
     }
 }
