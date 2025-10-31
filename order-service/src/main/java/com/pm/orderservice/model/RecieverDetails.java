@@ -20,7 +20,6 @@ public class RecieverDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private long orderId;
     @NotNull
     private String name;
     @NotNull
