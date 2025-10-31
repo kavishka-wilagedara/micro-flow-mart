@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
 
         ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
         // Validate product availability
-        checkProductAvailability(productOrderResponse);
+        checkProductAvailability(productOrderResponse, orderRequest);
 
         OrderResponse orderResponse = buildOrderResponse(orderRequest, productOrderResponse);
         Order orderEntity = buildOrderEntity(orderRequest, orderResponse, productId);
@@ -71,20 +71,26 @@ public class OrderServiceImpl implements OrderService {
         return List.of();
     }
 
-    private void checkProductAvailability(ProductOrderResponse productOrderResponse) {
+    private void checkProductAvailability(ProductOrderResponse productOrderResponse, OrderRequest orderRequest) {
 
         LocalDate today = LocalDate.now();
+        int availableQuantity = productOrderResponse.getQuantity();
+        int orderQuantity = orderRequest.getProductDetailsRequest().getQuantity();
 
         if (!productOrderResponse.isForSale()){
             throw new CustomBusinessException("Product is not for sale");
         }
 
-        if (productOrderResponse.getQuantity() == 0){
+        if (availableQuantity == 0){
             throw new CustomBusinessException("Product out of stock");
         }
 
         if(productOrderResponse.getExpiryDate().isBefore(today)){
             throw new CustomBusinessException("Product has expired");
+        }
+
+        if(orderQuantity > availableQuantity){
+            throw new CustomBusinessException("Order limit exceed available product limit, Maximum limit: " + availableQuantity);
         }
     }
 
@@ -145,14 +151,14 @@ public class OrderServiceImpl implements OrderService {
 
         try{
             return productWebClient.get()
-                    .uri("/api/v1/products/{productId}", productId)
+                    .uri("/api/v1/products/get/{productId}", productId)
                     .retrieve()
                     .bodyToMono(ProductOrderResponse.class)
                     .blockOptional()
                     .orElseThrow(() -> new CustomBusinessException("Empty product order response"));
         }
         catch (WebClientRequestException ex){
-            log.error("Error fetch product details: {}", ex.getMessage());
+            log.error("Error fetching product details: {}", ex.getMessage());
             throw new CustomBusinessException("Product service is unreachable or down");
         }
         catch (Exception ex) {
