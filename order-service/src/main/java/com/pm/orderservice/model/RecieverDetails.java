@@ -5,10 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "reciever_details")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
