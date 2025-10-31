@@ -46,7 +46,7 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("get/{productId}")
+    @GetMapping("/get/{productId}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable Long productId){
 
         ProductResponse productResponse = productService.getProduct(productId);
