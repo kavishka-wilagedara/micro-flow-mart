@@ -12,4 +12,5 @@ public interface ProductService {
     void deleteProduct(long productId);
     ProductResponse getProduct(long productId);
     List<ProductResponse> getAllProducts();
+    ProductResponse reduceProductQuantity(Long productId, int quantity);
 }
