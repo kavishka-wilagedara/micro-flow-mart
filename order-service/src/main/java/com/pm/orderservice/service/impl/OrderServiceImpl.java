@@ -38,17 +38,34 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(OrderRequest orderRequest) {
 
         long productId = orderRequest.getProductDetailsRequest().getProductId();
+        int orderQuantity = orderRequest.getProductDetailsRequest().getQuantity();
 
         ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
         // Validate product availability
         checkProductAvailability(productOrderResponse, orderRequest);
 
-        OrderResponse orderResponse = buildOrderResponse(orderRequest, productOrderResponse);
-        Order orderEntity = buildOrderEntity(orderRequest, orderResponse, productId);
+        try{
+            // Reduce product quantity for the order
+            reserveProductQuantity(productId, orderQuantity);
+            log.info("Reserved product stock productId={} qunatity={}" , productId, orderQuantity);
+        }
+        catch(Exception ex){
+            throw new CustomBusinessException("Failed to reserve product stock");
+        }
 
-        orderRepository.save(orderEntity);
+        try {
+            OrderResponse orderResponse = buildOrderResponse(orderRequest, productOrderResponse);
+            Order orderEntity = buildOrderEntity(orderRequest, orderResponse, productId);
+            orderRepository.save(orderEntity);
 
-        return orderResponse;
+            return orderResponse;
+        }
+        catch (Exception ex) {
+            // rollback product quantity reduce method
+            rollbackProductQuantity(productId, orderQuantity);
+            log.info("Rollback product stock productId={} quantity={}" , productId, orderQuantity);
+            throw new CustomBusinessException("Order creation failed");
+        }
     }
 
     @Override
@@ -184,5 +201,27 @@ public class OrderServiceImpl implements OrderService {
                 .orderDate(orderResponse.getOrderDate())
                 .recieverDetails(mapRecieverDetailsAndAddress(orderRequest))
                 .build();
+    }
+
+    private void reserveProductQuantity(long productId, int quantity){
+        productWebClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v1/products/quantity/{productId}/reduce")
+                        .queryParam("quantity", quantity)
+                        .build(productId))
+                .retrieve()
+                .bodyToMono(ProductOrderResponse.class)
+                .block();
+    }
+
+    private void rollbackProductQuantity(long productId, int quantity){
+        productWebClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v1/products/quantity/{productId}/rollback")
+                        .queryParam("quantity", quantity)
+                        .build(productId))
+                .retrieve()
+                .bodyToMono(ProductOrderResponse.class)
+                .block();
     }
 }
