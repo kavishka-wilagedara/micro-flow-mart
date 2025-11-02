@@ -116,6 +116,19 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
+    public ProductResponse rollbackProductQuantity(Long productId, int quantity) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(
+                        ApplicationConstants.PRODUCT_NOT_FOUND_MESSAGE + productId
+                ));
+
+        existingProduct.setQuantity(existingProduct.getQuantity() + quantity);
+        setProductStatus(existingProduct);
+        productRepository.save(existingProduct);
+        return productMapper.toProductResponse(existingProduct);
+    }
+
     private void validateProductRequest(ProductRequest productRequest) {
 
         LocalDate today = LocalDate.now();
