@@ -13,4 +13,5 @@ public interface ProductService {
     ProductResponse getProduct(long productId);
     List<ProductResponse> getAllProducts();
     ProductResponse reduceProductQuantity(Long productId, int quantity);
+    ProductResponse rollbackProductQuantity(Long productId, int quantity);
 }
