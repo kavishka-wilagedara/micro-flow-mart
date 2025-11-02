@@ -3,6 +3,7 @@ package com.pm.productservice.service.impl;
 import com.pm.productservice.dto.request.ProductRequest;
 import com.pm.productservice.dto.response.ProductResponse;
 import com.pm.productservice.exception.InvalidDateException;
+import com.pm.productservice.exception.InvalidInputException;
 import com.pm.productservice.exception.NotFoundException;
 import com.pm.productservice.mapper.ProductMapper;
 import com.pm.productservice.model.Product;
@@ -85,6 +86,34 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAll();
 
         return products.stream().map(productMapper::toProductResponse).toList();
+    }
+
+    @Override
+    public ProductResponse reduceProductQuantity(Long productId, int quantity) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException(
+                        ApplicationConstants.PRODUCT_NOT_FOUND_MESSAGE + productId
+                ));
+
+        int availableProductQuantity = existingProduct.getQuantity();
+
+        if(quantity != 0){
+
+            if (availableProductQuantity >= quantity) {
+                existingProduct.setQuantity(existingProduct.getQuantity() - quantity);
+                setProductStatus(existingProduct);
+                productRepository.save(existingProduct);
+                return productMapper.toProductResponse(existingProduct);
+            }
+            else{
+                throw new InvalidInputException("Available product quantity: " + availableProductQuantity);
+            }
+
+        }
+        else{
+            throw new InvalidInputException("Order quantity should be greater than zero");
+        }
+
     }
 
     private void validateProductRequest(ProductRequest productRequest) {
