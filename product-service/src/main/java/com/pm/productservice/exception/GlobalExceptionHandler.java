@@ -52,4 +52,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidInputException(
+            InvalidInputException ex){
+
+        log.error("Handle invalid input exception", ex);
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+
+        return ResponseEntity.badRequest().body(errors);
+    }
+
 }
