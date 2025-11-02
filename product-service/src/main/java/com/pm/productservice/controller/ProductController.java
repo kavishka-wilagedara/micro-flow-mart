@@ -70,4 +70,12 @@ public class ProductController {
         return ResponseEntity.ok().body(productResponse);
     }
 
+    @PutMapping("/quantity/{productId}/rollback")
+    public ResponseEntity<ProductResponse> rollbackProduct(@PathVariable Long productId, @RequestParam int quantity){
+
+        ProductResponse productResponse = productService.rollbackProductQuantity(productId, quantity);
+
+        return ResponseEntity.ok().body(productResponse);
+    }
+
 }
