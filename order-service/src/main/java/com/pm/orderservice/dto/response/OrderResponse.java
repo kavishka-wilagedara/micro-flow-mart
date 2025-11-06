@@ -1,5 +1,6 @@
 package com.pm.orderservice.dto.response;
 
+import com.pm.orderservice.model.OrderStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ public class OrderResponse {
     private int quantity;
     private double totalPrice;
     private LocalDateTime orderDate;
+    private OrderStatus orderStatus;
     private RecieverDetailsResponse recieverDetailsResponse;
     private RecieverAddressResponse recieverAddressResponse;
 }
