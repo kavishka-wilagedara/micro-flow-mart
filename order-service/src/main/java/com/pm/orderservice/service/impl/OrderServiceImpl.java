@@ -5,7 +5,10 @@ import com.pm.orderservice.dto.request.RecieverAddressRequest;
 import com.pm.orderservice.dto.request.RecieverDetailsRequest;
 import com.pm.orderservice.dto.response.OrderResponse;
 import com.pm.orderservice.dto.response.ProductOrderResponse;
+import com.pm.orderservice.dto.response.RecieverAddressResponse;
+import com.pm.orderservice.dto.response.RecieverDetailsResponse;
 import com.pm.orderservice.exception.CustomBusinessException;
+import com.pm.orderservice.mappers.OrderMapper;
 import com.pm.orderservice.model.Order;
 import com.pm.orderservice.model.RecieverAddress;
 import com.pm.orderservice.model.RecieverDetails;
@@ -28,10 +31,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final WebClient productWebClient;
+    private final OrderMapper orderMapper;
 
-    public OrderServiceImpl(OrderRepository orderRepository, WebClient productWebClient) {
+    public OrderServiceImpl(OrderRepository orderRepository, WebClient productWebClient,
+                            OrderMapper orderMapper) {
         this.orderRepository = orderRepository;
         this.productWebClient = productWebClient;
+        this.orderMapper = orderMapper;
     }
 
     @Override
@@ -189,8 +195,31 @@ public class OrderServiceImpl implements OrderService {
         OrderResponse response = new OrderResponse();
         calculateTotalAmountOfOrder(orderRequest, productOrderResponse, response);
         setOrderDetails(orderRequest, productOrderResponse, response);
+
+        // Set reciever Details and Address
+        response.setRecieverDetailsResponse(buildRecieverDetailsResponse(orderRequest));
+        response.setRecieverAddressResponse(buildRecieverAddressResponse(orderRequest));
         return response;
 
+    }
+
+    private RecieverDetailsResponse buildRecieverDetailsResponse(OrderRequest orderRequest){
+        RecieverDetailsRequest detailsRequest = orderRequest.getRecieverDetailsRequest();
+        return RecieverDetailsResponse.builder()
+                .name(detailsRequest.getName())
+                .phone(detailsRequest.getPhone())
+                .email(detailsRequest.getEmail())
+                .build();
+    }
+
+    private RecieverAddressResponse buildRecieverAddressResponse(OrderRequest orderRequest){
+        RecieverAddressRequest addressRequest = orderRequest.getRecieverAddressRequest();
+        return RecieverAddressResponse.builder()
+                .postalCode(addressRequest.getPostalCode())
+                .addressLine1(addressRequest.getAddressLine1())
+                .addressLine2(addressRequest.getAddressLine2())
+                .city(addressRequest.getCity())
+                .build();
     }
 
     private Order buildOrderEntity(OrderRequest orderRequest, OrderResponse orderResponse, long productId){
