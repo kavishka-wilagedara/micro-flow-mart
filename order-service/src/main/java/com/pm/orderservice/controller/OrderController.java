@@ -49,4 +49,14 @@ public class OrderController {
         orderService.deleteOrder(orderId);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/update/{orderId}")
+    public ResponseEntity<OrderResponse> update(
+            @PathVariable Long orderId,
+            @Valid @RequestBody OrderRequest orderRequest){
+
+        OrderResponse orderResponse = orderService.updateOrder(orderRequest, orderId);
+
+        return ResponseEntity.ok().body(orderResponse);
+    }
 }
