@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/order")
 public class OrderController {
@@ -31,5 +33,12 @@ public class OrderController {
         OrderResponse orderResponse = orderService.getOrder(orderId);
 
         return ResponseEntity.ok().body(orderResponse);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<OrderResponse>> getAll(){
+        List<OrderResponse> orderResponseList = orderService.getAllOrders();
+
+        return ResponseEntity.ok().body(orderResponseList);
     }
 }
