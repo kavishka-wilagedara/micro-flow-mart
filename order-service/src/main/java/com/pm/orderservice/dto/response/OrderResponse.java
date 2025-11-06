@@ -11,5 +11,6 @@ public class OrderResponse {
     private int quantity;
     private double totalPrice;
     private LocalDateTime orderDate;
-
+    private RecieverDetailsResponse recieverDetailsResponse;
+    private RecieverAddressResponse recieverAddressResponse;
 }
