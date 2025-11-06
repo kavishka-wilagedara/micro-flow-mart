@@ -28,6 +28,9 @@ public class Order {
     @NotNull
     private double totalPrice;
 
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "reciever_id", referencedColumnName = "id")
     private RecieverDetails recieverDetails;
