@@ -30,6 +30,7 @@ public class OrderController {
 
     @GetMapping("/get/{orderId}")
     public ResponseEntity<OrderResponse> get(@PathVariable Long orderId){
+
         OrderResponse orderResponse = orderService.getOrder(orderId);
 
         return ResponseEntity.ok().body(orderResponse);
@@ -37,8 +38,15 @@ public class OrderController {
 
     @GetMapping("/all")
     public ResponseEntity<List<OrderResponse>> getAll(){
+
         List<OrderResponse> orderResponseList = orderService.getAllOrders();
 
         return ResponseEntity.ok().body(orderResponseList);
+    }
+
+    @DeleteMapping("/delete/{orderId}")
+    public ResponseEntity<Void> delete(@PathVariable Long orderId){
+        orderService.deleteOrder(orderId);
+        return ResponseEntity.noContent().build();
     }
 }
