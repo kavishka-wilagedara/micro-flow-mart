@@ -16,6 +16,7 @@ import com.pm.orderservice.model.RecieverAddress;
 import com.pm.orderservice.model.RecieverDetails;
 import com.pm.orderservice.repo.OrderRepository;
 import com.pm.orderservice.service.OrderService;
+import com.pm.orderservice.util.ApplicationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
         try{
             // Reduce product quantity for the order
             reserveProductQuantity(productId, orderQuantity);
-            log.info("Reserved product stock productId={} qunatity={}" , productId, orderQuantity);
+            log.info("Reserved product stock at order creation productId={} quantity={}" , productId, orderQuantity);
         }
         catch(Exception ex){
             throw new CustomBusinessException("Failed to reserve product stock");
@@ -74,25 +75,74 @@ public class OrderServiceImpl implements OrderService {
         catch (Exception ex) {
             // rollback product quantity reduce method
             rollbackProductQuantity(productId, orderQuantity);
-            log.info("Rollback product stock productId={} quantity={}" , productId, orderQuantity);
+            log.info("Rollback product stock at order creation productId={} quantity={}" , productId, orderQuantity);
             throw new CustomBusinessException("Order creation failed");
         }
     }
 
     @Override
-    public OrderResponse updateOrder(OrderRequest orderRequest) {
-        return null;
+    public OrderResponse updateOrder(OrderRequest updateOrderRequest, long orderId) {
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(ApplicationConstants.ORDER_NOT_FOUND_MESSAGE + orderId));
+
+        if(existingOrder.getStatus() != OrderStatus.PENDING){
+            throw new CustomBusinessException("Can't update order, Order already placed to currier service");
+        }
+
+        else{
+            long productId = updateOrderRequest.getProductDetailsRequest().getProductId();
+            int orderQuantity = updateOrderRequest.getProductDetailsRequest().getQuantity();
+
+            ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
+            checkProductAvailability(productOrderResponse, updateOrderRequest);
+
+            try{
+                // Reduce product quantity for the order
+                reserveProductQuantity(productId, orderQuantity);
+                log.info("Reserved product stock at order update productId={} quantity={}" , productId, orderQuantity);
+            }
+            catch(Exception ex){
+                throw new CustomBusinessException("Failed to reserve product stock");
+            }
+
+            try{
+                OrderResponse updateOrderResponse = buildOrderResponse(updateOrderRequest, productOrderResponse);
+                Order updatedOrder = updateOrderFields(existingOrder, updateOrderRequest, updateOrderResponse);
+                orderRepository.save(updatedOrder);
+
+                updateOrderResponse.setOrderStatus(updatedOrder.getStatus());
+
+                log.info("Order updated successfully");
+                return updateOrderResponse;
+            }
+            catch (Exception ex) {
+                // rollback product quantity reduce method
+                rollbackProductQuantity(productId, orderQuantity);
+                log.info("Rollback product stock at order update productId={} quantity={}" , productId, orderQuantity);
+                throw new CustomBusinessException("Order creation failed");
+            }
+        }
     }
 
     @Override
     public void deleteOrder(long orderId) {
+
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(ApplicationConstants.ORDER_NOT_FOUND_MESSAGE + orderId));
+
+        if(existingOrder.getStatus()!= OrderStatus.PENDING){
+            throw new CustomBusinessException("Can't delete order, Order already placed to currier service");
+        }
+        else{
+            orderRepository.delete(existingOrder);
+        }
 
     }
 
     @Override
     public OrderResponse getOrder(long orderId) {
         Order existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(()-> new NotFoundException("Order not found"));
+                .orElseThrow(() -> new NotFoundException(ApplicationConstants.ORDER_NOT_FOUND_MESSAGE + orderId));
 
         return buildOrderResponse(existingOrder);
     }
@@ -168,6 +218,8 @@ public class OrderServiceImpl implements OrderService {
         recieverDetails.setPhone(detailsRequest.getPhone());
         recieverDetails.setEmail(detailsRequest.getEmail());
 
+        log.info("Reciever details: {}", recieverDetails);
+
         // Map reciever address
         RecieverAddress recieverAddress = new RecieverAddress();
         recieverAddress.setPostalCode(addressRequest.getPostalCode());
@@ -177,6 +229,7 @@ public class OrderServiceImpl implements OrderService {
 
         recieverDetails.setAddress(recieverAddress);
 
+        log.info("Reciever address: {}", recieverAddress);
         return recieverDetails;
 
     }
@@ -297,5 +350,22 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setOrderStatus(order.getStatus());
 
         return orderResponse;
+    }
+
+    private Order updateOrderFields(Order existingOrder, OrderRequest orderRequest, OrderResponse orderResponse){
+
+        long newProductId = orderRequest.getProductDetailsRequest().getProductId();
+        long previousProductId = existingOrder.getProductId();
+
+        if(previousProductId != newProductId){
+            log.error("Product id does not match previousId={}, newId={}", previousProductId, newProductId);
+            throw new CustomBusinessException("Can't update product details");
+        }
+        existingOrder.setQuantity(orderResponse.getQuantity());
+        existingOrder.setTotalPrice(orderResponse.getTotalPrice());
+        existingOrder.setStatus(OrderStatus.PENDING);
+        existingOrder.setRecieverDetails(mapRecieverDetailsAndAddress(orderRequest));
+
+        return existingOrder;
     }
 }
