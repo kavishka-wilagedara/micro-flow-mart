@@ -5,10 +5,7 @@ import com.pm.orderservice.dto.response.OrderResponse;
 import com.pm.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/order")
@@ -25,6 +22,13 @@ public class OrderController {
             @Valid @RequestBody OrderRequest orderRequest){
 
         OrderResponse orderResponse = orderService.createOrder(orderRequest);
+
+        return ResponseEntity.ok().body(orderResponse);
+    }
+
+    @GetMapping("/get/{orderId}")
+    public ResponseEntity<OrderResponse> get(@PathVariable Long orderId){
+        OrderResponse orderResponse = orderService.getOrder(orderId);
 
         return ResponseEntity.ok().body(orderResponse);
     }
