@@ -8,6 +8,7 @@ import com.pm.orderservice.dto.response.ProductOrderResponse;
 import com.pm.orderservice.dto.response.RecieverAddressResponse;
 import com.pm.orderservice.dto.response.RecieverDetailsResponse;
 import com.pm.orderservice.exception.CustomBusinessException;
+import com.pm.orderservice.exception.NotFoundException;
 import com.pm.orderservice.mappers.OrderMapper;
 import com.pm.orderservice.model.Order;
 import com.pm.orderservice.model.RecieverAddress;
@@ -86,7 +87,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrder(long orderId) {
-        return null;
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(()-> new NotFoundException("Order not found"));
+
+        return buildOrderResponse(existingOrder);
     }
 
     @Override
@@ -222,6 +226,25 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    private RecieverDetailsResponse buildRecieverDetailsResponse(Order order){
+        RecieverDetails recieverDetails = order.getRecieverDetails();
+        return RecieverDetailsResponse.builder()
+                .name(recieverDetails.getName())
+                .phone(recieverDetails.getPhone())
+                .email(recieverDetails.getEmail())
+                .build();
+    }
+
+    private RecieverAddressResponse buildRecieverAddressResponse(Order order){
+        RecieverAddress recieverAddress = order.getRecieverDetails().getAddress();
+        return RecieverAddressResponse.builder()
+                .postalCode(recieverAddress.getPostalCode())
+                .addressLine1(recieverAddress.getAddressLine1())
+                .addressLine2(recieverAddress.getAddressLine2())
+                .city(recieverAddress.getCity())
+                .build();
+    }
+
     private Order buildOrderEntity(OrderRequest orderRequest, OrderResponse orderResponse, long productId){
         return Order.builder()
                 .productId(productId)
@@ -252,5 +275,18 @@ public class OrderServiceImpl implements OrderService {
                 .retrieve()
                 .bodyToMono(ProductOrderResponse.class)
                 .block();
+    }
+
+    private OrderResponse buildOrderResponse(Order order){
+
+        long productId = order.getProductId();
+        ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
+
+        OrderResponse orderResponse = orderMapper.toOrderResponse(order);
+        orderResponse.setProductOrderResponse(productOrderResponse);
+        orderResponse.setRecieverDetailsResponse(buildRecieverDetailsResponse(order));
+        orderResponse.setRecieverAddressResponse(buildRecieverAddressResponse(order));
+
+        return orderResponse;
     }
 }
