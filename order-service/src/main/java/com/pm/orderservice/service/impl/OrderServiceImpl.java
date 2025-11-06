@@ -11,6 +11,7 @@ import com.pm.orderservice.exception.CustomBusinessException;
 import com.pm.orderservice.exception.NotFoundException;
 import com.pm.orderservice.mappers.OrderMapper;
 import com.pm.orderservice.model.Order;
+import com.pm.orderservice.model.OrderStatus;
 import com.pm.orderservice.model.RecieverAddress;
 import com.pm.orderservice.model.RecieverDetails;
 import com.pm.orderservice.repo.OrderRepository;
@@ -65,6 +66,9 @@ public class OrderServiceImpl implements OrderService {
             Order orderEntity = buildOrderEntity(orderRequest, orderResponse, productId);
             orderRepository.save(orderEntity);
 
+            // Set Order Status
+            orderResponse.setOrderStatus(orderEntity.getStatus());
+
             return orderResponse;
         }
         catch (Exception ex) {
@@ -95,7 +99,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getAllOrders() {
-        return List.of();
+        return orderRepository.findAll()
+                .stream()
+                .map(this::buildOrderResponse)
+                .toList();
     }
 
     private void checkProductAvailability(ProductOrderResponse productOrderResponse, OrderRequest orderRequest) {
@@ -251,6 +258,7 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(orderResponse.getQuantity())
                 .totalPrice(orderResponse.getTotalPrice())
                 .orderDate(orderResponse.getOrderDate())
+                .status(OrderStatus.PENDING)
                 .recieverDetails(mapRecieverDetailsAndAddress(orderRequest))
                 .build();
     }
@@ -286,6 +294,7 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setProductOrderResponse(productOrderResponse);
         orderResponse.setRecieverDetailsResponse(buildRecieverDetailsResponse(order));
         orderResponse.setRecieverAddressResponse(buildRecieverAddressResponse(order));
+        orderResponse.setOrderStatus(order.getStatus());
 
         return orderResponse;
     }
