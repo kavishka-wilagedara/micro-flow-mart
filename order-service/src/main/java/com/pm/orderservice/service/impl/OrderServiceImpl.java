@@ -344,6 +344,7 @@ public class OrderServiceImpl implements OrderService {
         ProductOrderResponse productOrderResponse = fetchProductOrderDetails(productId);
 
         OrderResponse orderResponse = orderMapper.toOrderResponse(order);
+        orderResponse.setOrderId(order.getId());
         orderResponse.setProductOrderResponse(productOrderResponse);
         orderResponse.setRecieverDetailsResponse(buildRecieverDetailsResponse(order));
         orderResponse.setRecieverAddressResponse(buildRecieverAddressResponse(order));
