@@ -1,7 +1,8 @@
 package com.pm.inventoryservice.model;
 
+
 import jakarta.persistence.*;
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -12,11 +13,11 @@ public class Inventory {
     private long id;
 
     @NotNull
-    private long OrderId;
+    private long orderId;
     @NotNull
-    private long ProductId;
+    private long productId;
     @NotNull
-    private String ProductName;
+    private String productName;
     @NotNull
     private int quantity;
     @NotNull
