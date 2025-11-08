@@ -1,4 +1,4 @@
-package com.pm.orderservice.model;
+package com.pm.orderservice.enums;
 
 public enum OrderStatus {
 
