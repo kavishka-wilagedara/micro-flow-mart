@@ -1,6 +1,6 @@
 package com.pm.orderservice.dto.response;
 
-import com.pm.orderservice.model.OrderStatus;
+import com.pm.orderservice.enums.OrderStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
