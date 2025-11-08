@@ -1,5 +1,6 @@
 package com.pm.orderservice.model;
 
+import com.pm.orderservice.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
