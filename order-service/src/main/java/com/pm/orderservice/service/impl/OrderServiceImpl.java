@@ -1,5 +1,6 @@
 package com.pm.orderservice.service.impl;
 
+import com.pm.orderservice.dto.events.OrderEvent;
 import com.pm.orderservice.dto.request.OrderRequest;
 import com.pm.orderservice.dto.request.RecieverAddressRequest;
 import com.pm.orderservice.dto.request.RecieverDetailsRequest;
@@ -7,11 +8,13 @@ import com.pm.orderservice.dto.response.OrderResponse;
 import com.pm.orderservice.dto.response.ProductOrderResponse;
 import com.pm.orderservice.dto.response.RecieverAddressResponse;
 import com.pm.orderservice.dto.response.RecieverDetailsResponse;
+import com.pm.orderservice.enums.EventStatus;
 import com.pm.orderservice.exception.CustomBusinessException;
 import com.pm.orderservice.exception.NotFoundException;
+import com.pm.orderservice.kafka.OrderProducer;
 import com.pm.orderservice.mappers.OrderMapper;
 import com.pm.orderservice.model.Order;
-import com.pm.orderservice.model.OrderStatus;
+import com.pm.orderservice.enums.OrderStatus;
 import com.pm.orderservice.model.RecieverAddress;
 import com.pm.orderservice.model.RecieverDetails;
 import com.pm.orderservice.repo.OrderRepository;
@@ -35,12 +38,14 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final WebClient productWebClient;
     private final OrderMapper orderMapper;
+    private final OrderProducer orderProducer;
 
     public OrderServiceImpl(OrderRepository orderRepository, WebClient productWebClient,
-                            OrderMapper orderMapper) {
+                            OrderMapper orderMapper, OrderProducer orderProducer) {
         this.orderRepository = orderRepository;
         this.productWebClient = productWebClient;
         this.orderMapper = orderMapper;
+        this.orderProducer = orderProducer;
     }
 
     @Override
@@ -69,6 +74,10 @@ public class OrderServiceImpl implements OrderService {
 
             // Set Order Status
             orderResponse.setOrderStatus(orderEntity.getStatus());
+            // Set orderID to orderResponse
+            orderResponse.setOrderId(orderEntity.getId());
+            // Send event
+            sendEventToKafka(orderResponse, orderEntity);
 
             return orderResponse;
         }
@@ -368,5 +377,19 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setRecieverDetails(mapRecieverDetailsAndAddress(orderRequest));
 
         return existingOrder;
+    }
+
+    private void sendEventToKafka(OrderResponse orderResponse, Order order){
+
+        ProductOrderResponse productOrderResponse = orderResponse.getProductOrderResponse();
+
+        OrderEvent orderEvent = new OrderEvent(
+                order.getId(),
+                productOrderResponse.getId(),
+                productOrderResponse.getName(),
+                EventStatus.ORDER_CREATED
+        );
+
+        orderProducer.sendOrderEvent(orderEvent);
     }
 }
