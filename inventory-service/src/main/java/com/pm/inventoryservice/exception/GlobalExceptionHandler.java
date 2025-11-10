@@ -52,4 +52,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(CustomBusinessException.class)
+    public ResponseEntity<Map<String, String>> handleCustomBusinessException(
+            CustomBusinessException ex){
+
+        log.error("Handling business exception", ex);
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return ResponseEntity.badRequest().body(errors);
+    }
 }
