@@ -7,9 +7,10 @@ import java.util.List;
 
 public interface InventoryService {
 
-    InventoryResponse createInventory(InventoryRequest inventoryRequest);
-    InventoryResponse updateInventory(InventoryRequest inventoryRequest, long orderId);
+    void createInventory(InventoryRequest inventoryRequest);
+    void updateInventory(InventoryRequest inventoryRequest, long orderId);
     void deleteInventory(long inventoryId);
     InventoryResponse getInventory(long inventoryId);
     List<InventoryResponse> getAllInventory();
+    void markAsDeletedOrder(long orderId);
 }
