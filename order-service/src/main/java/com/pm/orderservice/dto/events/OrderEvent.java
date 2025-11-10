@@ -14,4 +14,8 @@ public class OrderEvent implements Serializable {
     private long orderId;
     private long productId;
     private String productName;
+
+    public OrderEvent(long orderId) {
+        this.orderId = orderId;
+    }
 }
