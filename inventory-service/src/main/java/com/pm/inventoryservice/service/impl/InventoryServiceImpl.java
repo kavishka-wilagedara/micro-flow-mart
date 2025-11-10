@@ -76,5 +76,13 @@ public class InventoryServiceImpl implements InventoryService {
         return List.of();
     }
 
+    @Override
+    public void markAsDeletedOrder(long orderId) {
 
+        Inventory exisitingInventory = inventoryRepository.findByOrderId(orderId)
+                .orElseThrow(()-> new NotFoundException("Inventory not found with order id " + orderId));
+
+        exisitingInventory.setOrderStatus(OrderStatus.ORDER_DELETED);
+        inventoryRepository.save(exisitingInventory);
+    }
 }
