@@ -2,7 +2,6 @@ package com.pm.inventoryservice.kafka;
 
 import com.pm.inventoryservice.dto.event.OrderEvent;
 import com.pm.inventoryservice.dto.request.InventoryRequest;
-import com.pm.inventoryservice.model.Inventory;
 import com.pm.inventoryservice.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
