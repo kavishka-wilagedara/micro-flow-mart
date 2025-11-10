@@ -129,6 +129,8 @@ public class OrderServiceImpl implements OrderService {
                 // Set orderID to orderResponse
                 updateOrderResponse.setOrderId(updatedOrder.getId());
 
+                // Send order updated event
+                sendOrderUpdatedEventToKafka(updateOrderResponse, updatedOrder);
 
                 log.info("Order updated successfully");
                 return updateOrderResponse;
@@ -402,7 +404,18 @@ public class OrderServiceImpl implements OrderService {
         orderProducer.sendOrderCreatedEvent(orderEvent);
     }
 
+    private void sendOrderUpdatedEventToKafka(OrderResponse orderResponse, Order order){
 
+        ProductOrderResponse productOrderResponse = orderResponse.getProductOrderResponse();
+
+        OrderEvent orderEvent = new OrderEvent(
+                order.getId(),
+                productOrderResponse.getId(),
+                productOrderResponse.getName()
+        );
+
+        orderProducer.sendOrderUpdatedEvent(orderEvent);
+    }
 
 
 }
