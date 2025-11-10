@@ -9,13 +9,13 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    @Value("${spring.kafka.template.default-topic}")
-    private String topicName;
+    @Value("${kafka.topic.order.created}")
+    private String orderCreatedTopic;
 
     @Bean
-    public NewTopic createTopic() {
+    public NewTopic orderCreatedTopic() {
         return TopicBuilder
-                .name(topicName)
+                .name(orderCreatedTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();
