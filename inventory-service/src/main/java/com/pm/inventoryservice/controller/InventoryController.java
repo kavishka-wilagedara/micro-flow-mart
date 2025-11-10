@@ -5,6 +5,8 @@ import com.pm.inventoryservice.service.InventoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/inventory")
 public class InventoryController {
@@ -29,5 +31,13 @@ public class InventoryController {
         InventoryResponse inventoryResponse = inventoryService.getInventory(inventoryId);
 
         return ResponseEntity.ok().body(inventoryResponse);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<InventoryResponse>> getAllInventory() {
+
+        List<InventoryResponse> inventoryResponses = inventoryService.getAllInventory();
+
+        return ResponseEntity.ok().body(inventoryResponses);
     }
 }
