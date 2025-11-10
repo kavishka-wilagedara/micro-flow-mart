@@ -126,7 +126,8 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.save(updatedOrder);
 
                 updateOrderResponse.setOrderStatus(updatedOrder.getStatus());
-
+                // Set orderID to orderResponse
+                updateOrderResponse.setOrderId(updatedOrder.getId());
 
 
                 log.info("Order updated successfully");
@@ -280,6 +281,7 @@ public class OrderServiceImpl implements OrderService {
         // Set reciever Details and Address
         response.setRecieverDetailsResponse(buildRecieverDetailsResponse(orderRequest));
         response.setRecieverAddressResponse(buildRecieverAddressResponse(orderRequest));
+
         return response;
 
     }
@@ -399,6 +401,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderProducer.sendOrderCreatedEvent(orderEvent);
     }
+
 
 
 
