@@ -8,7 +8,7 @@ import java.util.List;
 public interface InventoryService {
 
     InventoryResponse createInventory(InventoryRequest inventoryRequest);
-    InventoryResponse updateInventory(InventoryRequest inventoryRequest, long inventoryId);
+    InventoryResponse updateInventory(InventoryRequest inventoryRequest, long orderId);
     void deleteInventory(long inventoryId);
     InventoryResponse getInventory(long inventoryId);
     List<InventoryResponse> getAllInventory();
