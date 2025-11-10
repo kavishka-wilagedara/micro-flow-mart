@@ -19,13 +19,16 @@ public class OrderProducer {
     private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
     private final NewTopic orderCreatedTopic;
     private final NewTopic orderUpdatedTopic;
+    private final NewTopic orderDeletedTopic;
 
     public OrderProducer(
             NewTopic orderCreatedTopic,
             NewTopic orderUpdatedTopic,
+            NewTopic orderDeletedTopic,
             KafkaTemplate<String, OrderEvent> kafkaTemplate) {
         this.orderCreatedTopic = orderCreatedTopic;
         this.orderUpdatedTopic = orderUpdatedTopic;
+        this.orderDeletedTopic = orderDeletedTopic;
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -35,6 +38,10 @@ public class OrderProducer {
 
     public void sendOrderUpdatedEvent(OrderEvent orderEvent) {
         sendMessage(orderUpdatedTopic.name(), orderEvent);
+    }
+
+    public void sendOrderDeletedEvent(OrderEvent orderEvent) {
+        sendMessage(orderDeletedTopic.name(), orderEvent);
     }
 
     public void sendMessage(String topic, OrderEvent orderEvent) {
