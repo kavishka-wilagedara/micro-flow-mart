@@ -93,8 +93,15 @@ public class OrderServiceImpl implements OrderService {
         Order existingOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException(ApplicationConstants.ORDER_NOT_FOUND_MESSAGE + orderId));
 
+        long existingOrderProductId = existingOrder.getProductId();
+        long updateOrderProductId = updateOrderRequest.getProductDetailsRequest().getProductId();
+
         if(existingOrder.getStatus() != OrderStatus.PENDING){
             throw new CustomBusinessException("Can't update order, Order already placed to currier service");
+        }
+
+        if(existingOrderProductId != updateOrderProductId){
+            throw new CustomBusinessException("Product id mismatch");
         }
 
         else{
@@ -119,6 +126,8 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.save(updatedOrder);
 
                 updateOrderResponse.setOrderStatus(updatedOrder.getStatus());
+
+
 
                 log.info("Order updated successfully");
                 return updateOrderResponse;
@@ -390,4 +399,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderProducer.sendOrderCreatedEvent(orderEvent);
     }
+
+
+
 }
