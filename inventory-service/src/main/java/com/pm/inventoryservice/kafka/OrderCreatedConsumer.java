@@ -2,6 +2,7 @@ package com.pm.inventoryservice.kafka;
 
 import com.pm.inventoryservice.dto.event.OrderEvent;
 import com.pm.inventoryservice.dto.request.InventoryRequest;
+import com.pm.inventoryservice.exception.ConsumerFailedException;
 import com.pm.inventoryservice.service.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public class OrderCreatedConsumer {
             inventoryService.createInventory(inventoryRequest);
         }catch (Exception e) {
             log.error("Failed receiving order event from order-service {}", e.getMessage());
+            throw new ConsumerFailedException("Order event receiving failed");
         }
     }
 
