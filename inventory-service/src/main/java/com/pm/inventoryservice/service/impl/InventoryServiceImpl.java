@@ -68,7 +68,10 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public InventoryResponse getInventory(long inventoryId) {
-        return null;
+        Inventory exisitingInventory = inventoryRepository.findById(inventoryId)
+                .orElseThrow(()-> new NotFoundException("Inventory not found with id " + inventoryId));
+
+        return inventoryMapper.toInventoryResponse(exisitingInventory);
     }
 
     @Override
