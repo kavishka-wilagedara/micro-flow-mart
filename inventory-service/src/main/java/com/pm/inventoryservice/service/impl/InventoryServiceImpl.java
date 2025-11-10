@@ -76,7 +76,12 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryResponse> getAllInventory() {
-        return List.of();
+        List<Inventory> inventories = inventoryRepository.findAll();
+
+        return inventories
+                .stream()
+                .map(inventoryMapper::toInventoryResponse)
+                .toList();
     }
 
     @Override
