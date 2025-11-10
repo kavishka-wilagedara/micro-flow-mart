@@ -2,6 +2,7 @@ package com.pm.inventoryservice.service.impl;
 
 import com.pm.inventoryservice.dto.request.InventoryRequest;
 import com.pm.inventoryservice.dto.response.InventoryResponse;
+import com.pm.inventoryservice.exception.NotFoundException;
 import com.pm.inventoryservice.mapper.InventoryMapper;
 import com.pm.inventoryservice.model.Inventory;
 import com.pm.inventoryservice.model.OrderStatus;
@@ -42,8 +43,18 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public InventoryResponse updateInventory(InventoryRequest inventoryRequest, long inventoryId) {
-        return null;
+    public InventoryResponse updateInventory(InventoryRequest inventoryRequest, long orderId) {
+
+        Inventory exisitinInventory = inventoryRepository.findByOrderId(orderId)
+                .orElseThrow(()-> new NotFoundException("Inventory not found with order id " + orderId));
+
+        exisitinInventory.setProductId(inventoryRequest.getProductId());
+        exisitinInventory.setProductName(inventoryRequest.getProductName());
+        exisitinInventory.setOrderStatus(OrderStatus.ORDER_UPDATED);
+
+        inventoryRepository.save(exisitinInventory);
+
+        return inventoryMapper.toInventoryResponse(exisitinInventory);
     }
 
     @Override
