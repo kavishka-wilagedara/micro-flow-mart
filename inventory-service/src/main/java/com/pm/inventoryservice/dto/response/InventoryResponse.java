@@ -12,9 +12,6 @@ public class InventoryResponse {
     private long orderId;
     private long productId;
     private String productName;
-    private int quantity;
-    private double unitPrice;
-    private double totalPrice;
     private OrderStatus orderStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

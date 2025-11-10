@@ -3,9 +3,19 @@ package com.pm.inventoryservice.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "inventory")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Inventory {
 
     @Id
@@ -18,12 +28,6 @@ public class Inventory {
     private long productId;
     @NotNull
     private String productName;
-    @NotNull
-    private int quantity;
-    @NotNull
-    private double unitPrice;
-    @NotNull
-    private double totalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
