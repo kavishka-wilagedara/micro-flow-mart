@@ -1,6 +1,7 @@
 package com.pm.orderservice.kafka;
 
 import com.pm.orderservice.dto.events.OrderEvent;
+import com.pm.orderservice.exception.CustomBusinessException;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +18,23 @@ public class OrderProducer {
 
     private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
     private final NewTopic orderCreatedTopic;
+    private final NewTopic orderUpdatedTopic;
 
     public OrderProducer(
             NewTopic orderCreatedTopic,
+            NewTopic orderUpdatedTopic,
             KafkaTemplate<String, OrderEvent> kafkaTemplate) {
         this.orderCreatedTopic = orderCreatedTopic;
+        this.orderUpdatedTopic = orderUpdatedTopic;
         this.kafkaTemplate = kafkaTemplate;
     }
 
     public void sendOrderCreatedEvent(OrderEvent orderEvent) {
         sendMessage(orderCreatedTopic.name(), orderEvent);
+    }
+
+    public void sendOrderUpdatedEvent(OrderEvent orderEvent) {
+        sendMessage(orderUpdatedTopic.name(), orderEvent);
     }
 
     public void sendMessage(String topic, OrderEvent orderEvent) {
@@ -42,6 +50,7 @@ public class OrderProducer {
             log.info("Event sent successfully to topic {}: {}", topic, orderEvent);
         }catch (Exception ex){
             log.error("Error while sending event to topic {}: {}", topic, ex.getMessage());
+            throw new CustomBusinessException("Event send failed");
         }
     }
 }
