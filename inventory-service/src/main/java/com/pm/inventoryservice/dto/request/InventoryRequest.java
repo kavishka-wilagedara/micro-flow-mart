@@ -1,9 +1,11 @@
 package com.pm.inventoryservice.dto.request;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class InventoryRequest {
 
     @NotNull(message = "Order ID required")
