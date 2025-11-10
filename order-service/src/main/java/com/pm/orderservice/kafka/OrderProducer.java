@@ -15,27 +15,33 @@ public class OrderProducer {
 
     private static final Logger log = LoggerFactory.getLogger(OrderProducer.class);
 
-    private final NewTopic orderTopic;
     private final KafkaTemplate<String, OrderEvent> kafkaTemplate;
+    private final NewTopic orderCreatedTopic;
 
-    public OrderProducer(NewTopic orderTopic, KafkaTemplate<String, OrderEvent> kafkaTemplate) {
-        this.orderTopic = orderTopic;
+    public OrderProducer(
+            NewTopic orderCreatedTopic,
+            KafkaTemplate<String, OrderEvent> kafkaTemplate) {
+        this.orderCreatedTopic = orderCreatedTopic;
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendOrderEvent(OrderEvent orderEvent) {
-        log.info("Sending order event: {}", orderEvent);
+    public void sendOrderCreatedEvent(OrderEvent orderEvent) {
+        sendMessage(orderCreatedTopic.name(), orderEvent);
+    }
+
+    public void sendMessage(String topic, OrderEvent orderEvent) {
+        log.info("Sending event: {}", orderEvent);
 
         Message<OrderEvent> message = MessageBuilder
                 .withPayload(orderEvent)
-                .setHeader(KafkaHeaders.TOPIC, orderTopic.name())
+                .setHeader(KafkaHeaders.TOPIC, topic)
                 .build();
 
         try {
             kafkaTemplate.send(message);
-            log.info("Order event sent successfully: {}", orderEvent);
+            log.info("Event sent successfully to topic {}: {}", topic, orderEvent);
         }catch (Exception ex){
-            log.error("Error while sending order event: {}", ex.getMessage());
+            log.error("Error while sending event to topic {}: {}", topic, ex.getMessage());
         }
     }
 }
