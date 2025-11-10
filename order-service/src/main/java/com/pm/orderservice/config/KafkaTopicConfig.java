@@ -12,10 +12,22 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.order.created}")
     private String orderCreatedTopic;
 
+    @Value("${kafka.topic.order.updated}")
+    private String orderUpdatedTopic;
+
     @Bean
     public NewTopic orderCreatedTopic() {
         return TopicBuilder
                 .name(orderCreatedTopic)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic orderUpdatedTopic() {
+        return TopicBuilder
+                .name(orderUpdatedTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();
