@@ -154,6 +154,8 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomBusinessException("Can't delete order, Order already placed to currier service");
         }
         else{
+            // Send order deleted event
+            sendOrderDeletedEventToKafka(existingOrder);
             orderRepository.delete(existingOrder);
         }
 
@@ -415,6 +417,13 @@ public class OrderServiceImpl implements OrderService {
         );
 
         orderProducer.sendOrderUpdatedEvent(orderEvent);
+    }
+
+    private void sendOrderDeletedEventToKafka(Order order){
+
+        OrderEvent orderEvent = new OrderEvent(order.getId());
+
+        orderProducer.sendOrderDeletedEvent(orderEvent);
     }
 
 
