@@ -8,7 +8,6 @@ import com.pm.orderservice.dto.response.OrderResponse;
 import com.pm.orderservice.dto.response.ProductOrderResponse;
 import com.pm.orderservice.dto.response.RecieverAddressResponse;
 import com.pm.orderservice.dto.response.RecieverDetailsResponse;
-import com.pm.orderservice.enums.EventStatus;
 import com.pm.orderservice.exception.CustomBusinessException;
 import com.pm.orderservice.exception.NotFoundException;
 import com.pm.orderservice.kafka.OrderProducer;
@@ -76,8 +75,8 @@ public class OrderServiceImpl implements OrderService {
             orderResponse.setOrderStatus(orderEntity.getStatus());
             // Set orderID to orderResponse
             orderResponse.setOrderId(orderEntity.getId());
-            // Send event
-            sendEventToKafka(orderResponse, orderEntity);
+            // Send order created event
+            sendOrderCreatedEventToKafka(orderResponse, orderEntity);
 
             return orderResponse;
         }
@@ -379,17 +378,16 @@ public class OrderServiceImpl implements OrderService {
         return existingOrder;
     }
 
-    private void sendEventToKafka(OrderResponse orderResponse, Order order){
+    private void sendOrderCreatedEventToKafka(OrderResponse orderResponse, Order order){
 
         ProductOrderResponse productOrderResponse = orderResponse.getProductOrderResponse();
 
         OrderEvent orderEvent = new OrderEvent(
                 order.getId(),
                 productOrderResponse.getId(),
-                productOrderResponse.getName(),
-                EventStatus.ORDER_CREATED
+                productOrderResponse.getName()
         );
 
-        orderProducer.sendOrderEvent(orderEvent);
+        orderProducer.sendOrderCreatedEvent(orderEvent);
     }
 }
